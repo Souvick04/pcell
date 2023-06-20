@@ -1,0 +1,42 @@
+# main.py
+from flask import Flask, render_template, request, make_response
+import csv
+
+app = Flask(__name__)
+
+# Sample database
+data = []
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    name = request.form.get('name')
+    email = request.form.get('email')
+    department = request.form.get('department')
+
+    # Store form data in the database
+    data.append({'name': name, 'email': email, 'department': department})
+
+    return render_template('success.html')
+
+@app.route('/download')
+def download():
+    # Generate CSV file
+    csv_data = []
+    for entry in data:
+        csv_data.append([entry['name'], entry['email'], entry['department']])
+
+    # Create CSV file response
+    response = make_response('')
+    response.headers['Content-Disposition'] = 'attachment; filename=data.csv'
+    writer = csv.writer(response)
+    writer.writerow(['Name', 'Email', 'Department'])  # CSV header
+    writer.writerows(csv_data)
+
+    return response
+
+if __name__ == '__main__':
+    app.run()
